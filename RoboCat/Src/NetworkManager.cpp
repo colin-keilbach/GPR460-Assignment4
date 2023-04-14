@@ -3,13 +3,12 @@
 NetworkManager::NetworkManager() :
 	mBytesSentThisFrame( 0 ),
 	mDropPacketChance( 0.3f ),
-	mSimulatedLatency( 10.f )
-{
-}
+	mSimulatedLatency( 10.f ),
+	mDeliveryNotificationManager( true, true )
+{}
 
 NetworkManager::~NetworkManager()
-{
-}
+{}
 
 bool NetworkManager::Init( uint16_t inPort )
 {
@@ -23,12 +22,12 @@ bool NetworkManager::Init( uint16_t inPort )
 	mBytesSentPerSecond = WeightedTimedMovingAverage( 1.f );
 
 	//did we bind okay?
-	if( mSocket == nullptr )
+	if (mSocket == nullptr)
 	{
 		return false;
 	}
 
-	if( mSocket->SetNonBlockingMode( true ) != NO_ERROR )
+	if (mSocket->SetNonBlockingMode( true ) != NO_ERROR)
 	{
 		return false;
 	}
@@ -44,13 +43,15 @@ void NetworkManager::ProcessIncomingPackets()
 
 	UpdateBytesSentLastFrame();
 
+	mDeliveryNotificationManager.ProcessTimedOutPackets();
+
 }
 
 void NetworkManager::ReadIncomingPacketsIntoQueue()
 {
 	//should we just keep a static one?
 	//should we just keep a static one?
-	char packetMem[ 1500 ];
+	char packetMem[1500];
 	int packetSize = sizeof( packetMem );
 	InputMemoryBitStream inputStream( packetMem, packetSize * 8 );
 	SocketAddress fromAddress;
@@ -59,27 +60,27 @@ void NetworkManager::ReadIncomingPacketsIntoQueue()
 	int receivedPackedCount = 0;
 	int totalReadByteCount = 0;
 
-	while( receivedPackedCount < kMaxPacketsPerFrameCount )
+	while (receivedPackedCount < kMaxPacketsPerFrameCount)
 	{
 		int readByteCount = mSocket->ReceiveFrom( packetMem, packetSize, fromAddress );
-		if( readByteCount == 0 )
+		if (readByteCount == 0)
 		{
 			//nothing to read
 			break;
 		}
-		else if( readByteCount == -WSAECONNRESET )
+		else if (readByteCount == -WSAECONNRESET)
 		{
 			//port closed on other end, so DC this person immediately
 			HandleConnectionReset( fromAddress );
 		}
-		else if( readByteCount > 0 )
+		else if (readByteCount > 0)
 		{
 			inputStream.ResetToCapacity( readByteCount );
 			++receivedPackedCount;
 			totalReadByteCount += readByteCount;
 
 			//now, should we drop the packet?
-			if( RoboMath::GetRandomFloat() >= mDropPacketChance )
+			if (RoboMath::GetRandomFloat() >= mDropPacketChance)
 			{
 				//we made it
 				//shove the packet into the queue and we'll handle it as soon as we should...
@@ -101,19 +102,19 @@ void NetworkManager::ReadIncomingPacketsIntoQueue()
 		}
 	}
 
-	if( totalReadByteCount > 0 )
+	if (totalReadByteCount > 0)
 	{
-		mBytesReceivedPerSecond.UpdatePerSecond( static_cast< float >( totalReadByteCount ) );
+		mBytesReceivedPerSecond.UpdatePerSecond( static_cast<float>( totalReadByteCount ) );
 	}
 }
 
 void NetworkManager::ProcessQueuedPackets()
 {
 	//look at the front packet...
-	while( !mPacketQueue.empty() )
+	while (!mPacketQueue.empty())
 	{
 		ReceivedPacket& nextPacket = mPacketQueue.front();
-		if( Timing::sInstance.GetTimef() > nextPacket.GetReceivedTime() )
+		if (Timing::sInstance.GetTimef() > nextPacket.GetReceivedTime())
 		{
 			ProcessPacket( nextPacket.GetPacketBuffer(), nextPacket.GetFromAddress() );
 			mPacketQueue.pop();
@@ -122,15 +123,16 @@ void NetworkManager::ProcessQueuedPackets()
 		{
 			break;
 		}
-	
+
 	}
 
 }
 
 void NetworkManager::SendPacket( const OutputMemoryBitStream& inOutputStream, const SocketAddress& inFromAddress )
 {
+	//TODO: add sequence numbers
 	int sentByteCount = mSocket->SendTo( inOutputStream.GetBufferPtr(), inOutputStream.GetByteLength(), inFromAddress );
-	if( sentByteCount > 0 )
+	if (sentByteCount > 0)
 	{
 		mBytesSentThisFrame += sentByteCount;
 	}
@@ -138,9 +140,9 @@ void NetworkManager::SendPacket( const OutputMemoryBitStream& inOutputStream, co
 
 void NetworkManager::UpdateBytesSentLastFrame()
 {
-	if( mBytesSentThisFrame > 0 )
+	if (mBytesSentThisFrame > 0)
 	{
-		mBytesSentPerSecond.UpdatePerSecond( static_cast< float >( mBytesSentThisFrame ) );
+		mBytesSentPerSecond.UpdatePerSecond( static_cast<float>( mBytesSentThisFrame ) );
 
 		mBytesSentThisFrame = 0;
 	}
@@ -152,13 +154,12 @@ NetworkManager::ReceivedPacket::ReceivedPacket( float inReceivedTime, InputMemor
 	mReceivedTime( inReceivedTime ),
 	mFromAddress( inFromAddress ),
 	mPacketBuffer( ioInputMemoryBitStream )
-{
-}
+{}
 
 
 void NetworkManager::AddToNetworkIdToGameObjectMap( GameObjectPtr inGameObject )
 {
-	mNetworkIdToGameObjectMap[ inGameObject->GetNetworkId() ] = inGameObject;
+	mNetworkIdToGameObjectMap[inGameObject->GetNetworkId()] = inGameObject;
 }
 
 void NetworkManager::RemoveFromNetworkIdToGameObjectMap( GameObjectPtr inGameObject )
