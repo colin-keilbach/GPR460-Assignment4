@@ -15,7 +15,7 @@ void RoboCatClient::HandleDying()
 	RoboCat::HandleDying();
 
 	//and if we're local, tell the hud so our health goes away!
-	if( GetPlayerId() == NetworkManagerClient::sInstance->GetPlayerId() )
+	if (GetPlayerId() == NetworkManagerClient::sInstance->GetPlayerId())
 	{
 		HUD::sInstance->SetPlayerHealth( 0 );
 	}
@@ -26,16 +26,32 @@ void RoboCatClient::Update()
 {
 	//for now, we don't simulate any movement on the client side
 	//we only move when the server tells us to move
+	// TODO: Update robocat
+
+	RoboCat::Update();
+
+	Vector3 oldLocation = GetLocation();
+	Vector3 oldVelocity = GetVelocity();
+	float oldRotation = GetRotation();
+
+	MoveList& moveList = InputManager::sInstance->GetMoveList();
+	for (const Move& unprocessedMove : moveList)
+	{
+		const InputState& currentState = unprocessedMove.GetInputState();
+		float deltaTime = unprocessedMove.GetDeltaTime();
+		ProcessInput( deltaTime, currentState );
+		SimulateMovement( deltaTime );
+	}
 }
 
 void RoboCatClient::Read( InputMemoryBitStream& inInputStream )
 {
 	bool stateBit;
-	
+
 	uint32_t readState = 0;
 
 	inInputStream.Read( stateBit );
-	if( stateBit )
+	if (stateBit)
 	{
 		uint32_t playerId;
 		inInputStream.Read( playerId );
@@ -52,7 +68,7 @@ void RoboCatClient::Read( InputMemoryBitStream& inInputStream )
 	Vector3 replicatedVelocity;
 
 	inInputStream.Read( stateBit );
-	if( stateBit )
+	if (stateBit)
 	{
 		inInputStream.Read( replicatedVelocity.mX );
 		inInputStream.Read( replicatedVelocity.mY );
@@ -71,7 +87,7 @@ void RoboCatClient::Read( InputMemoryBitStream& inInputStream )
 	}
 
 	inInputStream.Read( stateBit );
-	if( stateBit )
+	if (stateBit)
 	{
 		inInputStream.Read( stateBit );
 		mThrustDir = stateBit ? 1.f : -1.f;
@@ -82,7 +98,7 @@ void RoboCatClient::Read( InputMemoryBitStream& inInputStream )
 	}
 
 	inInputStream.Read( stateBit );
-	if( stateBit )
+	if (stateBit)
 	{
 		Vector3 color;
 		inInputStream.Read( color );
@@ -91,19 +107,19 @@ void RoboCatClient::Read( InputMemoryBitStream& inInputStream )
 	}
 
 	inInputStream.Read( stateBit );
-	if( stateBit )
+	if (stateBit)
 	{
 		mHealth = 0;
 		inInputStream.Read( mHealth, 4 );
 		readState |= ECRS_Health;
 	}
 
-	if( GetPlayerId() == NetworkManagerClient::sInstance->GetPlayerId() )
+	if (GetPlayerId() == NetworkManagerClient::sInstance->GetPlayerId())
 	{
 		//did we get health? if so, tell the hud!
-		if( ( readState & ECRS_Health ) != 0 )
+		if (( readState & ECRS_Health ) != 0)
 		{
 			HUD::sInstance->SetPlayerHealth( mHealth );
 		}
-	}	
+	}
 }
