@@ -2,8 +2,8 @@
 
 NetworkManager::NetworkManager() :
 	mBytesSentThisFrame( 0 ),
-	mDropPacketChance( 0.3f ),
-	mSimulatedLatency( 10.f ),
+	mDropPacketChance( 0 ),
+	mSimulatedLatency( 0 ),
 	mDeliveryNotificationManager( true, true )
 {}
 

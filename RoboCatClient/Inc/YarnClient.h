@@ -5,10 +5,13 @@ public:
 
 	virtual void		Read( InputMemoryBitStream& inInputStream ) override;
 
+	virtual void Update() override;
+
 protected:
 	YarnClient();
 
 private:
 
+	float mTimeToDie;
 	SpriteComponentPtr	mSpriteComponent;
 };
