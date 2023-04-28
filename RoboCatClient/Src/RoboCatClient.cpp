@@ -32,20 +32,27 @@ void RoboCatClient::Update()
 
 	Vector3 oldLocation = GetLocation();
 	Vector3 oldVelocity = GetVelocity();
-	LOG( "%f %f %f", oldVelocity.mX, oldVelocity.mY, oldVelocity.mZ );
+	//LOG( "%f %f %f", oldVelocity.mX, oldVelocity.mY, oldVelocity.mZ );
 	float oldRotation = GetRotation();
 
+	int playeID = NetworkManagerClient::sInstance->GetPlayerId();
+
 	// this client's cat
-	if (GetNetworkId() == NetworkManagerClient::sInstance->GetPlayerId())
+	if (GetPlayerId() == playeID)
 	{
 		MoveList& moveList = InputManager::sInstance->GetMoveList();
 		for (const Move& unprocessedMove : moveList)
 		{
 			const InputState& currentState = unprocessedMove.GetInputState();
-			float deltaTime = Timing::sInstance.GetDeltaTime();
+			float deltaTime = unprocessedMove.GetDeltaTime();
 			ProcessInput( deltaTime, currentState );
 			SimulateMovement( deltaTime );
 		}
+		//const InputState& currentState = InputManager::sInstance->GetState();
+		//float deltaTime = Timing::sInstance.GetDeltaTime();
+		////float deltaTime = NetworkManagerClient::sInstance->GetAvgRoundTripTime().GetValue();
+		//ProcessInput(deltaTime, currentState);
+		//SimulateMovement(deltaTime);
 	}
 	else // other cats
 	{

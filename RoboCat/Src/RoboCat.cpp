@@ -41,6 +41,7 @@ void RoboCat::AdjustVelocityByThrust( float inDeltaTime )
 	//just set the velocity based on the thrust direction -- no thrust will lead to 0 velocity
 	//simulating acceleration makes the client prediction a bit more complex
 	Vector3 forwardVector = GetForwardVector();
+	//LOG("Fx Fy Td Ms Dt %f %f %f %f %f", forwardVector.mX, forwardVector.mY, mThrustDir, mMaxLinearSpeed, inDeltaTime);
 	mVelocity = forwardVector * ( mThrustDir * inDeltaTime * mMaxLinearSpeed );
 }
 

@@ -17,7 +17,7 @@ void RoboCatServer::Update()
 	
 	Vector3 oldLocation = GetLocation();
 	Vector3 oldVelocity = GetVelocity();
-	LOG( "%f %f %f", oldVelocity.mX, oldVelocity.mY, oldVelocity.mZ );
+	//LOG( "%f %f %f", oldVelocity.mX, oldVelocity.mY, oldVelocity.mZ );
 	float oldRotation = GetRotation();
 
 	ClientProxyPtr client = NetworkManagerServer::sInstance->GetClientProxy( GetPlayerId() );
