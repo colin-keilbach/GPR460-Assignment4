@@ -226,3 +226,17 @@ void NetworkManagerClient::SendInputPacket()
 		moveList.Clear();
 	}
 }
+
+void NetworkManagerClient::AddClientYarn(YarnPtr yarn)
+{
+	mCliendYarnList.push_back(yarn);
+}
+
+void NetworkManagerClient::HandleClientYarnRemoval()
+{
+	if (mCliendYarnList.size() <= 0) return;
+
+	World::sInstance->RemoveGameObject(mCliendYarnList[0]);
+
+	mCliendYarnList.erase(mCliendYarnList.begin());
+}

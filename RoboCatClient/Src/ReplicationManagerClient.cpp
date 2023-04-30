@@ -50,6 +50,12 @@ void ReplicationManagerClient::ReadAndDoCreateAction( InputMemoryBitStream& inIn
 
 	//and read state
 	gameObject->Read( inInputStream );
+
+	//Handle yarn
+	if (fourCCName == 'YARN')
+	{
+		NetworkManagerClient::sInstance->HandleClientYarnRemoval();
+	}
 }
 
 void ReplicationManagerClient::ReadAndDoUpdateAction( InputMemoryBitStream& inInputStream, int inNetworkId )

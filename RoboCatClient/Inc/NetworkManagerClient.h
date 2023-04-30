@@ -23,6 +23,9 @@ public:
 			float									GetRoundTripTime()		const	{ return mAvgRoundTripTime.GetValue(); }
 			int		GetPlayerId()											const	{ return mPlayerId; }
 			float	GetLastMoveProcessedByServerTimestamp()					const	{ return mLastMoveProcessedByServerTimestamp; }
+
+			void AddClientYarn(YarnPtr yarn);
+			void HandleClientYarnRemoval();
 private:
 			NetworkManagerClient();
 			void Init( const SocketAddress& inServerAddress, const string& inName );
@@ -60,5 +63,7 @@ private:
 
 	WeightedTimedMovingAverage	mAvgRoundTripTime;
 	float						mLastRoundTripTime;
+
+	vector<YarnPtr> mCliendYarnList;
 
 };

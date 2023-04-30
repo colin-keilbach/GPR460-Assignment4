@@ -8,6 +8,8 @@ public:
 
 	virtual void	Read( InputMemoryBitStream& inInputStream ) override;
 
+	void HandleYarnRemoval();
+
 protected:
 	RoboCatClient();
 
@@ -15,6 +17,11 @@ protected:
 private:
 	float				mTimeLocationBecameOutOfSync;
 	float				mTimeVelocityBecameOutOfSync;
+
+	float		mTimeOfNextShot;
+	float		mTimeBetweenShots;
+
+	void HandleShooting();
 	
 	SpriteComponentPtr	mSpriteComponent;
 };
