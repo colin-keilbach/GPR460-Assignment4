@@ -8,8 +8,6 @@ public:
 
 	virtual void	Read( InputMemoryBitStream& inInputStream ) override;
 
-	void HandleYarnRemoval();
-
 protected:
 	RoboCatClient();
 
